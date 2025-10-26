@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Compiled files ###
+*.class
+
+### Test files in root ###
+test_*.java
+verify_*.java
+
+### Documentation (keep only README.md) ###
+*_API_*.md
+*_IMPLEMENTATION*.md
+*_FIXES*.md
+QUICK_START*.md
+CLAUDE.md
+
+### System files ###
+C:WindowsSystem32*
+hosts
