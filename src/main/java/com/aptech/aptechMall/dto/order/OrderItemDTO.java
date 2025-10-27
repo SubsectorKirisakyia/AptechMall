@@ -1,6 +1,6 @@
 package com.aptech.aptechMall.dto.order;
 
-import com.aptech.aptechMall.entity.Marketplace;
+import com.aptech.aptechMall.entity.enums.Marketplace;
 import com.aptech.aptechMall.entity.OrderItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,7 +1,7 @@
 package com.aptech.aptechMall.dto.order;
 
 import com.aptech.aptechMall.entity.Order;
-import com.aptech.aptechMall.entity.OrderStatus;
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

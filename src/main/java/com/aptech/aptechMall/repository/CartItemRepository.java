@@ -1,7 +1,7 @@
 package com.aptech.aptechMall.repository;
 
 import com.aptech.aptechMall.entity.CartItem;
-import com.aptech.aptechMall.entity.Marketplace;
+import com.aptech.aptechMall.entity.enums.Marketplace;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

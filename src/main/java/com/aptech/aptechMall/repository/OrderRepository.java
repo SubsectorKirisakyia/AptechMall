@@ -1,7 +1,7 @@
 package com.aptech.aptechMall.repository;
 
 import com.aptech.aptechMall.entity.Order;
-import com.aptech.aptechMall.entity.OrderStatus;
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

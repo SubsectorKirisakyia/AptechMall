@@ -1,6 +1,6 @@
 package com.aptech.aptechMall.dto.order;
 
-import com.aptech.aptechMall.entity.OrderStatus;
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

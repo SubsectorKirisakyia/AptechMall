@@ -1,6 +1,6 @@
 package com.aptech.aptechMall.Exception;
 
-import com.aptech.aptechMall.entity.OrderStatus;
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 
 /**
  * Exception thrown when attempting to cancel an order that cannot be cancelled

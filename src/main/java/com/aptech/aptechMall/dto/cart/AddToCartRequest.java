@@ -1,6 +1,6 @@
 package com.aptech.aptechMall.dto.cart;
 
-import com.aptech.aptechMall.entity.Marketplace;
+import com.aptech.aptechMall.entity.enums.Marketplace;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

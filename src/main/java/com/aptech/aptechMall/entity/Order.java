@@ -1,5 +1,6 @@
 package com.aptech.aptechMall.entity;
 
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

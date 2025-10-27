@@ -1,7 +1,7 @@
 package com.aptech.aptechMall.dto.cart;
 
 import com.aptech.aptechMall.entity.CartItem;
-import com.aptech.aptechMall.entity.Marketplace;
+import com.aptech.aptechMall.entity.enums.Marketplace;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

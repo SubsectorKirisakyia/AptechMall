@@ -1,4 +1,4 @@
-package com.aptech.aptechMall.entity;
+package com.aptech.aptechMall.entity.enums;
 
 /**
  * Enum representing supported marketplace platforms

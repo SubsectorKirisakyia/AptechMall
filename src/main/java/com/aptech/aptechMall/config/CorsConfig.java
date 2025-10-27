@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;  // ← QUAN TRỌNG: Dùng CorsFilter, không phải CorsWebFilter!
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 
@@ -36,7 +36,8 @@ public class CorsConfig {
         // Expose headers
         config.setExposedHeaders(Arrays.asList(
                 "Authorization",
-                "Content-Type"
+                "Content-Type",
+                "Set-Cookie"
         ));
 
         // Max age

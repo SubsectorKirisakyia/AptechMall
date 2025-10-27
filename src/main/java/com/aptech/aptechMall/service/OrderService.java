@@ -4,6 +4,7 @@ import com.aptech.aptechMall.Exception.*;
 import com.aptech.aptechMall.dto.order.CheckoutRequest;
 import com.aptech.aptechMall.dto.order.OrderResponse;
 import com.aptech.aptechMall.entity.*;
+import com.aptech.aptechMall.entity.enums.OrderStatus;
 import com.aptech.aptechMall.repository.CartItemRepository;
 import com.aptech.aptechMall.repository.CartRepository;
 import com.aptech.aptechMall.repository.OrderRepository;

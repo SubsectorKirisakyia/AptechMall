@@ -1,16 +1,26 @@
 package com.aptech.aptechMall.entity;
 
+import com.aptech.aptechMall.security.Role;
+import com.aptech.aptechMall.security.Status;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * User entity representing registered users in the system
@@ -23,11 +33,17 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+@Builder
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "Username is required")
+    @Size(min = 4, message = "Must be at least 4 character long")
+    @Column(nullable = false, unique = true, length = 30)
+    private String username;
 
     @Email(message = "Email should be valid")
     @NotBlank(message = "Email is required")
@@ -60,10 +76,65 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name="last_login")
+    private LocalDateTime lastLogin;
+
     // Relationships will be added:
-    // @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private Cart cart;
-    //
-    // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    // private List<Order> orders;
+     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+     private Cart cart;
+
+     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+     private List<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserAddresses> userAddresses = new HashSet<>();
+
+    @Column(nullable = false, columnDefinition = "ENUM('ADMIN', 'STAFF', 'CUSTOMER') DEFAULT 'CUSTOMER'")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    @Column(nullable = false, columnDefinition = "ENUM('ACTIVE', 'SUSPENDED', 'DELETED') DEFAULT 'ACTIVE'")
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Column(name = "avatar_url", length = 512)
+    private String avatarUrl;
+
+    @Column(name = "email_verified", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean emailVerified;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return !(status == Status.DELETED);
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return !(status == Status.SUSPENDED);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return status == Status.ACTIVE;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.status == null) {
+            this.status = Status.ACTIVE;
+        }
+        if (this.role == null) {
+            this.role = Role.CUSTOMER;
+        }
+    }
 }
