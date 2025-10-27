@@ -2,6 +2,7 @@ package com.aptech.aptechMall.service.authentication;
 
 import com.aptech.aptechMall.entity.User;
 import com.aptech.aptechMall.repository.UserRepository;
+import com.aptech.aptechMall.security.Status;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,18 +23,6 @@ public class JpaUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + username)) :
                 userRepository.findByEmail(username)
                         .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + username));
-        String roleName = user.getRole().name();
-        if (!roleName.startsWith("ROLE_")) {
-            roleName = "ROLE_" + roleName;
-        }
-
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .authorities(new SimpleGrantedAuthority(roleName))
-                .accountLocked(user.getStatus().name().equals("SUSPENDED"))
-                .accountExpired(user.getStatus().name().equals("DELETED"))
-                .disabled(!user.getStatus().name().equals("ACTIVE"))
-                .build();
+        return user;
     }
 }
