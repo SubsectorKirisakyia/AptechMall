@@ -28,7 +28,7 @@ public class JpaUserDetailsService implements UserDetailsService {
         }
 
         return org.springframework.security.core.userdetails.User.builder()
-                .username(usernameExists ? user.getUsername() : user.getEmail())
+                .username(user.getUsername())
                 .password(user.getPassword())
                 .authorities(new SimpleGrantedAuthority(roleName))
                 .accountLocked(user.getStatus().name().equals("SUSPENDED"))

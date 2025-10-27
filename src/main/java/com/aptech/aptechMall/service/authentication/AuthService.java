@@ -130,6 +130,10 @@ public class AuthService {
             throw new UsernameAlreadyTaken("Username " +request.getUsername() + " already taken");
         }
 
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UsernameAlreadyTaken("An account with email " +request.getEmail() + " already exists");
+        }
+
         Role role = Role.fromString(request.getRole());
 
         User user = User.builder()
@@ -157,8 +161,8 @@ public class AuthService {
             throw new BadCredentialsException("Thông tin đăng nhập không hợp lệ");
         }
 
-        String accessJwt = jwtService.generateToken(existUsername ? user.getUsername() : user.getEmail(), "access_token");
-        String refreshJwt = jwtService.generateToken(existUsername ? user.getUsername() : user.getEmail(), "refresh_token");
+        String accessJwt = jwtService.generateToken(user.getUsername(), "access_token");
+        String refreshJwt = jwtService.generateToken(user.getUsername(), "refresh_token");
         Cookie refreshTokenCookie = getRefreshTokenCookie(refreshJwt);
         setCookieAttribute(response, refreshTokenCookie);
         user.setLastLogin(LocalDateTime.now());

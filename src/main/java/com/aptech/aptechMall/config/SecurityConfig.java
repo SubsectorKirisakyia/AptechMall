@@ -52,31 +52,6 @@ public class SecurityConfig {
                 .build();
     }
 
-//    @Bean
-//    @Order(2) //For Internal Spring Authentication with Local Backend
-//    public SecurityFilterChain webFilterChain(HttpSecurity http) throws Exception {
-//        return http
-//                .securityMatcher("/admin/**", "/login", "/logout", "/")
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/login", "/").permitAll()
-//                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "STAFF")
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .defaultSuccessUrl("/admin/dashboard", true)
-//                        .permitAll()
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/login?logout")
-//                )
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
-//                .userDetailsService(userDetailsService)
-//                .build();
-//    }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
