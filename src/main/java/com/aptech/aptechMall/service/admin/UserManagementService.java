@@ -37,6 +37,8 @@ public class UserManagementService {
         dto.setRegisteredAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
         dto.setLastLogin(user.getLastLogin());
+        dto.setOrderCount(userRepository.getOrderCount(user.getEmail()));
+        dto.setTotalSpent(userRepository.getTotalSpent(user.getEmail()));
         return dto;
     }
 
@@ -87,7 +89,6 @@ public class UserManagementService {
     }
 
     public void deleteUser(Long id) {
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String currentUsername = auth.getName();
 

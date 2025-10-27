@@ -3,8 +3,11 @@ package com.aptech.aptechMall.repository;
 import com.aptech.aptechMall.entity.User;
 import com.aptech.aptechMall.security.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -30,4 +33,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
     int countByRole(Role role);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.user.email = :email")
+    Long getOrderCount(@Param("email") String email);
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.user.email = :email AND o.status = 'DELIVERED'")
+    BigDecimal getTotalSpent(@Param("email") String email);
+
 }

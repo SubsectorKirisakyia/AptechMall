@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -40,6 +41,7 @@ public class OrderController {
      * @return Created OrderResponse
      */
     @PostMapping("/checkout")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> checkout(
             @RequestParam(name = "userId") Long userId,
             @Valid @RequestBody CheckoutRequest request) {
@@ -63,6 +65,7 @@ public class OrderController {
      * @return Page of OrderResponse (summary without items)
      */
     @GetMapping
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getUserOrders(
             @RequestParam(name = "userId") Long userId,
             @RequestParam(name = "page", defaultValue = "0") int page,
@@ -97,6 +100,7 @@ public class OrderController {
      * @return OrderResponse with items
      */
     @GetMapping("/{orderId}")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderDetail(
             @RequestParam(name = "userId") Long userId,
             @PathVariable Long orderId) {
@@ -119,6 +123,7 @@ public class OrderController {
      * @return OrderResponse with items
      */
     @GetMapping("/number/{orderNumber}")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderByNumber(
             @RequestParam(name = "userId") Long userId,
             @PathVariable String orderNumber) {
@@ -142,6 +147,7 @@ public class OrderController {
      * @return Updated OrderResponse
      */
     @PutMapping("/{orderId}/status")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @RequestParam(name = "userId") Long userId,
             @PathVariable Long orderId,
@@ -166,6 +172,7 @@ public class OrderController {
      * @return Cancelled OrderResponse
      */
     @DeleteMapping("/{orderId}")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @RequestParam(name = "userId") Long userId,
             @PathVariable Long orderId) {

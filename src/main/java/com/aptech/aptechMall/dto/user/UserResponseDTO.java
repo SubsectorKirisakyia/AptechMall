@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -23,6 +24,8 @@ public class UserResponseDTO {
     private String phone;
     private Role role;
     private Status status;
+    private Long orderCount;
+    private BigDecimal totalSpent;
     private LocalDateTime registeredAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;

@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +25,7 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -40,8 +42,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/*", "/api/auth/**", "/api/debug/**", "/api/aliexpress/**", "/api/products/**").permitAll()
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/auth/*", "/api/auth/**", "/api/products/**").permitAll()
+                        .requestMatchers("/api/cart/**").hasRole("CUSTOMER")
+                        .requestMatchers("/api/orders/**").hasAnyRole("ADMIN", "STAFF", "CUSTOMER")
+                        .requestMatchers("/api/users/*", "/api/users/**", "/api/debug/**").hasAnyRole("ADMIN", "STAFF")
+                        .requestMatchers("/api/1688/**", "/api/aliexpress/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(AbstractHttpConfigurer::disable)

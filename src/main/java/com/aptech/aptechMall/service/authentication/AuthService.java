@@ -261,6 +261,7 @@ public class AuthService {
             User newUser = new User();
             newUser.setEmail(request.getUsername());
             newUser.setFullName(request.getFullname());
+            newUser.setUsername(request.getUsername());
             newUser.setPassword(passwordEncoder.encode("")); //temporarily set as blank as OAuth doesn't set password for you, login will not authenticate if password is blank
             newUser.setEmailVerified(true);
             return userRepository.save(newUser);

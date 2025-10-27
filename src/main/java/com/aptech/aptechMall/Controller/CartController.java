@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -33,6 +34,7 @@ public class CartController {
      * @return CartResponse with items and total
      */
     @GetMapping
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<CartResponse>> getCart(
             @RequestParam(name = "userId") Long userId) {
 
@@ -54,6 +56,7 @@ public class CartController {
      * @return Updated CartResponse
      */
     @PostMapping("/items")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<CartResponse>> addToCart(
             @RequestParam(name = "userId") Long userId,
             @Valid @RequestBody AddToCartRequest request) {
@@ -77,6 +80,7 @@ public class CartController {
      * @return Updated CartResponse
      */
     @PutMapping("/items/{itemId}")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<CartResponse>> updateCartItem(
             @RequestParam(name = "userId") Long userId,
             @PathVariable Long itemId,
@@ -101,6 +105,7 @@ public class CartController {
      * @return Updated CartResponse
      */
     @DeleteMapping("/items/{itemId}")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<CartResponse>> removeCartItem(
             @RequestParam(name = "userId") Long userId,
             @PathVariable Long itemId) {
@@ -122,6 +127,7 @@ public class CartController {
      * @return Empty CartResponse
      */
     @DeleteMapping("/clear")
+    @PreAuthorize("#userId == authentication.principal.id or hasAnyRole('ADMIN','STAFF')")
     public ResponseEntity<ApiResponse<CartResponse>> clearCart(
             @RequestParam(name = "userId") Long userId) {
 
