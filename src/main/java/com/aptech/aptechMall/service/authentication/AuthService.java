@@ -76,7 +76,7 @@ public class AuthService {
         }
     }
 
-    public ProfileResponse updateProfile(HttpServletRequest request, HttpServletResponse response, UpdateProfile updatedProfile, MultipartFile avatar){
+    public ProfileResponse updateProfile(HttpServletRequest request, HttpServletResponse response, UpdateProfile updatedProfile){
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Missing or invalid Authorization header");
@@ -84,7 +84,7 @@ public class AuthService {
         try {
             String subject = jwtService.extractUsername(authHeader.substring(7));
             boolean hasUsername = userRepository.existsByUsername(subject);
-            String avatarFilePath = avatar != null ? fileUploadService.saveAvatar(avatar) : updatedProfile.getAvatarUrl();
+            String avatarFilePath = updatedProfile.getAvatar() != null ? fileUploadService.saveAvatar(updatedProfile.getAvatar()) : updatedProfile.getAvatarUrl();
 
             User user = hasUsername ? userRepository.findByUsername(subject).orElseThrow() :
                     userRepository.findByEmail(subject).orElseThrow(() -> new UsernameNotFoundException("Can't retrieve Profile because User is null"));

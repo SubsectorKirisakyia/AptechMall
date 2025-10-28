@@ -60,10 +60,16 @@ public class LoginController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<ProfileResponse> updateProfile(HttpServletRequest request, HttpServletResponse response, @RequestBody UpdateProfile info,
-                                                         @RequestPart(value = "avatar", required = false) MultipartFile avatar){
-        return ResponseEntity.ok(authService.updateProfile(request, response, info, avatar));
+    public ResponseEntity<ProfileResponse> updateProfile(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @ModelAttribute UpdateProfile info // maps fields + optional file
+    ) {
+        return ResponseEntity.ok(
+                authService.updateProfile(request, response, info)
+        );
     }
+
 
     @PostMapping("/update-credentials")
     public ResponseEntity<String> updateAccountCredentials(HttpServletRequest request, HttpServletResponse response, @RequestBody UpdateCredential credentials){
