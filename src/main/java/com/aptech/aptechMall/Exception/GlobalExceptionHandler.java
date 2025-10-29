@@ -289,26 +289,6 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    // ===== Validation Exceptions =====
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, Object> response = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
-
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        response.put("error", "Validation Failed");
-        response.put("message", "Invalid input data");
-        response.put("errors", errors);
-        response.put("status", 400);
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-    }
-
     // ===== Database Exceptions =====
 
     @ExceptionHandler(DataIntegrityViolationException.class)
