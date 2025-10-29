@@ -1,5 +1,6 @@
 package com.aptech.aptechMall.entity;
 
+import com.aptech.aptechMall.entity.converters.OAuthConverter;
 import com.aptech.aptechMall.security.Role;
 import com.aptech.aptechMall.security.Status;
 import jakarta.persistence.*;
@@ -17,10 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * User entity representing registered users in the system
@@ -41,8 +39,8 @@ public class User implements UserDetails {
     private Long id;
 
     @NotBlank(message = "Username is required")
-    @Size(min = 4, message = "Must be at least 4 character long")
-    @Column(nullable = false, unique = true, length = 30)
+    @Size(min = 4, max = 60, message = "Must be at least 4 character long")
+    @Column(nullable = false, unique = true, length = 60)
     private String username;
 
     @Email(message = "Email should be valid")
@@ -78,6 +76,10 @@ public class User implements UserDetails {
 
     @Column(name="last_login")
     private LocalDateTime lastLogin;
+
+    @Convert(converter = OAuthConverter.class)
+    @Column(columnDefinition = "json")
+    private Map<String, Object> oAuth = new HashMap<>();
 
     // Relationships will be added:
      @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

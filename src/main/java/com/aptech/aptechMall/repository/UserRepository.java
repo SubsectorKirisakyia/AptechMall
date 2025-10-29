@@ -32,6 +32,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     boolean existsByEmail(String email);
 
+    @Query(value = """
+        SELECT * FROM users
+        WHERE JSON_UNQUOTE(JSON_EXTRACT(o_auth, '$.email')) = :email
+          AND JSON_UNQUOTE(JSON_EXTRACT(o_auth, '$.sub')) = :sub
+          AND JSON_EXTRACT(o_auth, '$.verified') = 1
+          LIMIT 1
+        """, nativeQuery = true)
+    Optional<User> findByOAuthEmailAndVerified(
+            @Param("email") String email,
+            @Param("sub") String sub
+    );
+
     int countByRole(Role role);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.user.email = :email")

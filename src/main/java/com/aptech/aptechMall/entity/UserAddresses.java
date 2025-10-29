@@ -2,6 +2,7 @@ package com.aptech.aptechMall.entity;
 
 import com.aptech.aptechMall.entity.enums.AddressType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,6 +29,7 @@ public class UserAddresses {
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "FK_USER_ADDRESSES_USER_ID"))
     private User user;
 
+    @Size(max = 191, message = "Receiver Name must not exceed 191 characters")
     @Column(name = "receiver_name", length = 191, nullable = false)
     private String receiverName;
 
@@ -43,6 +45,7 @@ public class UserAddresses {
     @Column(length = 100, nullable = false)
     private String ward;
 
+    @Size(max = 500, message = "Address must not exceed 500 characters")
     @Column(name = "address_detail", length = 500, nullable = false)
     private String addressDetail;
 

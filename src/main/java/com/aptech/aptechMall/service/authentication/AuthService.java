@@ -1,9 +1,10 @@
 package com.aptech.aptechMall.service.authentication;
 
-import com.aptech.aptechMall.Exception.UsernameAlreadyTaken;
+import com.aptech.aptechMall.Exception.*;
 import com.aptech.aptechMall.entity.User;
 import com.aptech.aptechMall.repository.UserRepository;
 import com.aptech.aptechMall.security.Role;
+import com.aptech.aptechMall.security.Status;
 import com.aptech.aptechMall.security.requests.*;
 import com.aptech.aptechMall.service.FileUploadService;
 import io.jsonwebtoken.*;
@@ -17,10 +18,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -131,10 +131,10 @@ public class AuthService {
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new UsernameAlreadyTaken("An account with email " +request.getEmail() + " already exists");
+            throw new EmailExistsException("An account with email " +request.getEmail() + " already exists");
         }
 
-        Role role = Role.fromString(request.getRole());
+        Role role = Role.CUSTOMER;
 
         User user = User.builder()
                 .username(request.getUsername())
@@ -153,21 +153,36 @@ public class AuthService {
         boolean existUsername = userRepository.existsByUsername(request.getUsername());
         User user = existUsername ?
                 userRepository.findByUsername(request.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException("Người dùng không tồn tại")) :
+                    .orElseThrow(() -> new UsernameNotFoundException("User Does not exists")) :
                 userRepository.findByEmail(request.getUsername())
-                        .orElseThrow(() -> new UsernameNotFoundException("Người dùng không tồn tại"));
+                        .orElseThrow(() -> new UsernameNotFoundException("User Does not exists"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()) || request.getPassword().isEmpty()) {
-            throw new BadCredentialsException("Thông tin đăng nhập không hợp lệ");
+            throw new BadCredentialsException("Account provided login credentials not valid");
         }
 
-        String accessJwt = jwtService.generateToken(user.getUsername(), "access_token");
-        String refreshJwt = jwtService.generateToken(user.getUsername(), "refresh_token");
-        Cookie refreshTokenCookie = getRefreshTokenCookie(refreshJwt);
-        setCookieAttribute(response, refreshTokenCookie);
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
-        return new AuthResponse(accessJwt);
+        switch (user.getStatus()){
+            case SUSPENDED -> throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
+            case DELETED -> throw new AccountDeletedException("This account were marked as removed and may no longer be able to login");
+            case ACTIVE -> {
+                Map<String, Object> oauth = user.getOAuth();
+                if (oauth != null) {
+                    Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
+                    if (!passwordSet) {
+                        throw new BadCredentialsException("You can only login through third party OAuth");
+                    }
+                }
+
+                String accessJwt = jwtService.generateToken(user.getUsername(), "access_token");
+                String refreshJwt = jwtService.generateToken(user.getUsername(), "refresh_token");
+                Cookie refreshTokenCookie = getRefreshTokenCookie(refreshJwt);
+                setCookieAttribute(response, refreshTokenCookie);
+                user.setLastLogin(LocalDateTime.now());
+                userRepository.save(user);
+                return new AuthResponse(accessJwt);
+            }
+            default -> throw new AccountNotActiveException("Account is not active or does not have a valid status identifiers. Please contact support.");
+        }
     }
 
     public AuthResponse refreshToken(HttpServletRequest request, HttpServletResponse response) {
@@ -223,6 +238,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .role(role)
                 .build();
+        user.setEmailVerified(true);
 
         userRepository.save(user);
     }
@@ -257,21 +273,41 @@ public class AuthService {
     public AuthResponse authenticateGoogle(AuthRequest request){
         User user; String accessJwt;
 
-        user = userRepository.findByEmail(request.getUsername()).orElseGet(() -> {
+        user = userRepository.findByEmail(request.getEmail()).orElseGet(() -> {
+            Map<String, Object> oAuthGoogle = new HashMap<>();
+            oAuthGoogle.put("provider", "google");
+            oAuthGoogle.put("sub", request.getGoogleSub());
+            oAuthGoogle.put("email", request.getEmail());
+            oAuthGoogle.put("verified", true);
+            oAuthGoogle.put("passwordSet", false);
+
             User newUser = new User();
-            newUser.setEmail(request.getUsername());
+            newUser.setEmail(request.getEmail());
             newUser.setFullName(request.getFullname());
-            newUser.setUsername(request.getUsername());
+            newUser.setUsername(request.getEmail());
             newUser.setPassword(passwordEncoder.encode("")); //temporarily set as blank as OAuth doesn't set password for you, login will not authenticate if password is blank
             newUser.setEmailVerified(true);
+            newUser.setOAuth(oAuthGoogle);
             return userRepository.save(newUser);
-        });;
-        accessJwt = jwtService.generateToken(user, "access_token");
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
+        });
 
-        return new AuthResponse(accessJwt);
-
+        switch (user.getStatus()){
+            case SUSPENDED -> throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
+            case DELETED -> throw new AccountDeletedException("This account were marked as removed and may no longer be able to login");
+            case ACTIVE -> {
+                Map<String, Object> oauth = user.getOAuth();
+                boolean isVerified = (Boolean) oauth.getOrDefault("verified", false);
+                if (isVerified && oauth.getOrDefault("sub", "").equals(request.getGoogleSub())){
+                    accessJwt = jwtService.generateToken(user, "access_token");
+                    user.setLastLogin(LocalDateTime.now());
+                    userRepository.save(user);
+                    System.out.println("Google Auth successfully authenticated for " + request.getEmail());
+                    return new AuthResponse(accessJwt);
+                }
+                return null;
+            }
+            default -> throw new AccountNotActiveException("Account is not active or does not have a valid status identifiers. Please contact support.");
+        }
     }
 
     public void generateRefreshTokenCookie(HttpServletRequest request, HttpServletResponse response){
@@ -296,10 +332,21 @@ public class AuthService {
         try {
             User user = userRepository.findByEmail(credential.getOldEmail()).orElseThrow(() -> new UsernameNotFoundException("Email not in Database"));
             boolean existUsername = userRepository.existsByUsername(user.getUsername());
+
             if (!passwordEncoder.matches(credential.getOldPassword(), user.getPassword())){
                 throw new BadCredentialsException("Old Password does not match");
             }
-            user.setPassword(passwordEncoder.encode(credential.getPassword()));
+            if (!credential.getPassword().isEmpty()){
+                user.setPassword(passwordEncoder.encode(credential.getPassword()));
+                if (user.getOAuth() != null) {
+                    Map<String, Object> oauth = new HashMap<>(user.getOAuth());
+                    Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
+                    if (!passwordSet) {
+                        oauth.put("passwordSet", true);
+                        user.setOAuth(oauth);
+                    }
+                }
+            }
 
             if(!credential.getEmail().equals(credential.getOldEmail())){
                 user.setEmail(credential.getEmail());
