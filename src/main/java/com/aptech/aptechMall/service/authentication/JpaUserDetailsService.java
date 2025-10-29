@@ -19,10 +19,9 @@ public class JpaUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         boolean usernameExists = userRepository.existsByUsername(username);
-        User user = usernameExists ? userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + username)) :
+        return usernameExists ? userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found for: " + username)) :
                 userRepository.findByEmail(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng: " + username));
-        return user;
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found for: " + username));
     }
 }

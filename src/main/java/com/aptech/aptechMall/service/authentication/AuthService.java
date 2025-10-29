@@ -133,7 +133,8 @@ public class AuthService {
                 userRepository.findByEmail(request.getUsername())
                         .orElseThrow(() -> new UsernameNotFoundException("User Does not exists"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()) || request.getPassword().isEmpty()) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())
+                || request.getPassword().isEmpty()) {
             throw new BadCredentialsException("Incorrect login info");
         }
 
@@ -141,13 +142,7 @@ public class AuthService {
             case SUSPENDED -> throw new AccountSuspendedException("Your account has been suspended. Please contact support.");
             case DELETED -> throw new AccountDeletedException("This account were marked as removed and may no longer be able to login");
             case ACTIVE -> {
-                Map<String, Object> oauth = user.getOAuth();
-                if (oauth != null) {
-                    Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
-                    if (!passwordSet) {
-                        throw new BadCredentialsException("You can only login through third party OAuth");
-                    }
-                }
+                if (passwordEncoder.matches("", user.getPassword())) throw new BadCredentialsException("You can only login through third party OAuth");
 
                 String accessJwt = jwtService.generateToken(user.getUsername(), "access_token");
                 String refreshJwt = jwtService.generateToken(user.getUsername(), "refresh_token");
@@ -260,13 +255,12 @@ public class AuthService {
             oAuthGoogle.put("sub", request.getGoogleSub());
             oAuthGoogle.put("email", request.getEmail());
             oAuthGoogle.put("verified", true);
-            oAuthGoogle.put("passwordSet", false);
 
             User newUser = new User();
             newUser.setEmail(request.getEmail());
             newUser.setFullName(request.getFullname());
-            newUser.setUsername(request.getEmail());
-            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newUser.setUsername(request.getUsername()); //Let frontend set username during registration before request hit backend
+            newUser.setPassword(passwordEncoder.encode("")); //Should let Frontend handle setting password during registration
             newUser.setEmailVerified(true);
             newUser.setOAuth(oAuthGoogle);
             return userRepository.save(newUser);
@@ -315,12 +309,8 @@ public class AuthService {
             boolean existUsername = userRepository.existsByUsername(user.getUsername());
 
             if (!credential.getPassword().isEmpty()){
-                Map<String, Object> oauth = new HashMap<>(user.getOAuth());
-                Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
-                if (!passwordSet) {
+                if (passwordEncoder.matches("", user.getPassword())) {
                     user.setPassword(passwordEncoder.encode(credential.getPassword()));
-                    oauth.put("passwordSet", true);
-                    user.setOAuth(oauth);
                 } else {
                     if (!passwordEncoder.matches(credential.getOldPassword(), user.getPassword())){
                         throw new BadCredentialsException("Old Password does not match");
