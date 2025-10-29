@@ -257,11 +257,11 @@ public class GlobalExceptionHandler {
         log.error("Account Suspended: {}", ex.getMessage(), ex);
 
         Map<String, Object> response = new HashMap<>();
-        response.put("error", "Unauthorized");
+        response.put("error", "Forbidden");
         response.put("message", ex.getMessage());
-        response.put("status", 401);
+        response.put("status", 403);
         return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
+                .status(HttpStatus.FORBIDDEN)
                 .body(response);
     }
     @ExceptionHandler(AccountDeletedException.class)
@@ -287,6 +287,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(response);
+    }
+
+    // ===== Validation Exceptions =====
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, Object> response = new HashMap<>();
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        response.put("error", "Validation Failed");
+        response.put("message", "Invalid input data");
+        response.put("errors", errors);
+        response.put("status", 400);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // ===== Database Exceptions =====

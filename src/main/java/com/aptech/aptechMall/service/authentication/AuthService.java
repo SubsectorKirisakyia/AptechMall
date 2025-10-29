@@ -57,18 +57,6 @@ public class AuthService {
                     .lastLogin(user.getLastLogin())
                     .build();
 
-        } catch (ExpiredJwtException e) {
-            log.error("JWT expired: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        } catch (JwtException e) {
-            log.error("Invalid JWT: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        } catch (UsernameNotFoundException e) {
-            log.error("User not found: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return null;
         } catch (Exception e) {
             log.error("Unexpected error in getProfile: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -106,18 +94,6 @@ public class AuthService {
                     .lastLogin(user.getLastLogin())
                     .build();
 
-        } catch (ExpiredJwtException e) {
-            log.error("JWT expired: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        } catch (JwtException e) {
-            log.error("Invalid JWT: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        } catch (UsernameNotFoundException e) {
-            log.error("User not found: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return null;
         } catch (Exception e) {
             log.error("Unexpected error in getProfile: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
