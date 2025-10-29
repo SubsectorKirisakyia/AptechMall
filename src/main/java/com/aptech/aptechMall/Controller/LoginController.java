@@ -5,6 +5,7 @@ import com.aptech.aptechMall.service.authentication.AuthService;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class LoginController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
@@ -72,7 +73,7 @@ public class LoginController {
 
 
     @PostMapping("/update-credentials")
-    public ResponseEntity<String> updateAccountCredentials(HttpServletRequest request, HttpServletResponse response, @RequestBody UpdateCredential credentials){
+    public ResponseEntity<String> updateAccountCredentials(HttpServletRequest request, HttpServletResponse response, @Valid @RequestBody UpdateCredential credentials){
         authService.updateEmailOrPassword(request, response, credentials);
         return ResponseEntity.ok("Credentials Updated");
     }

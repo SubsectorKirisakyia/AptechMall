@@ -36,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
         SELECT * FROM users
         WHERE JSON_UNQUOTE(JSON_EXTRACT(o_auth, '$.email')) = :email
           AND JSON_UNQUOTE(JSON_EXTRACT(o_auth, '$.sub')) = :sub
-          AND JSON_EXTRACT(o_auth, '$.verified') = 1
+          AND JSON_EXTRACT(o_auth, '$.verified') = true
           LIMIT 1
         """, nativeQuery = true)
     Optional<User> findByOAuthEmailAndVerified(

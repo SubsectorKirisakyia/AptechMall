@@ -58,19 +58,19 @@ public class AuthService {
                     .build();
 
         } catch (ExpiredJwtException e) {
-            System.err.println("JWT expired: " + e.getMessage());
+            log.error("JWT expired: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } catch (JwtException e) {
-            System.err.println("Invalid JWT: " + e.getMessage());
+            log.error("Invalid JWT: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } catch (UsernameNotFoundException e) {
-            System.err.println("User not found: " + e.getMessage());
+            log.error("User not found: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
         } catch (Exception e) {
-            System.err.println("Unexpected error in getProfile: " + e.getMessage());
+            log.error("Unexpected error in getProfile: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return null;
         }
@@ -107,19 +107,19 @@ public class AuthService {
                     .build();
 
         } catch (ExpiredJwtException e) {
-            System.err.println("JWT expired: " + e.getMessage());
+            log.error("JWT expired: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } catch (JwtException e) {
-            System.err.println("Invalid JWT: " + e.getMessage());
+            log.error("Invalid JWT: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         } catch (UsernameNotFoundException e) {
-            System.err.println("User not found: " + e.getMessage());
+            log.error("User not found: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return null;
         } catch (Exception e) {
-            System.err.println("Unexpected error in getProfile: " + e.getMessage());
+            log.error("Unexpected error in getProfile: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return null;
         }
@@ -158,7 +158,7 @@ public class AuthService {
                         .orElseThrow(() -> new UsernameNotFoundException("User Does not exists"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword()) || request.getPassword().isEmpty()) {
-            throw new BadCredentialsException("Account provided login credentials not valid");
+            throw new BadCredentialsException("Incorrect login info");
         }
 
         switch (user.getStatus()){
@@ -179,6 +179,7 @@ public class AuthService {
                 setCookieAttribute(response, refreshTokenCookie);
                 user.setLastLogin(LocalDateTime.now());
                 userRepository.save(user);
+                log.info("User " + user.getUsername() + " has logged in at " + user.getLastLogin());
                 return new AuthResponse(accessJwt);
             }
             default -> throw new AccountNotActiveException("Account is not active or does not have a valid status identifiers. Please contact support.");
@@ -244,11 +245,15 @@ public class AuthService {
     }
 
     public void logout(HttpServletRequest request, HttpServletResponse response) {
-        String accessToken = request.getHeader("Authorization");
-        Cookie refreshTokenCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals("refresh_token")).findFirst().orElseThrow();
-        revokeToken(accessToken.substring(7));
-        revokeToken(refreshTokenCookie.getValue());
-        revokeRefreshTokenCookie(response, refreshTokenCookie);
+        try {
+            String accessToken = request.getHeader("Authorization");
+            Cookie refreshTokenCookie = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals("refresh_token")).findFirst().orElseThrow();
+            revokeToken(accessToken.substring(7));
+            revokeToken(refreshTokenCookie.getValue());
+            revokeRefreshTokenCookie(response, refreshTokenCookie);
+        } catch (Exception e) {
+            log.error("Logout Failure: " + e.getMessage());
+        }
     }
 
     private void revokeToken(String token) {
@@ -273,7 +278,7 @@ public class AuthService {
     public AuthResponse authenticateGoogle(AuthRequest request){
         User user; String accessJwt;
 
-        user = userRepository.findByEmail(request.getEmail()).orElseGet(() -> {
+        user = userRepository.findByOAuthEmailAndVerified(request.getEmail(), request.getGoogleSub()).orElseGet(() -> {
             Map<String, Object> oAuthGoogle = new HashMap<>();
             oAuthGoogle.put("provider", "google");
             oAuthGoogle.put("sub", request.getGoogleSub());
@@ -297,11 +302,11 @@ public class AuthService {
             case ACTIVE -> {
                 Map<String, Object> oauth = user.getOAuth();
                 boolean isVerified = (Boolean) oauth.getOrDefault("verified", false);
-                if (isVerified && oauth.getOrDefault("sub", "").equals(request.getGoogleSub())){
+                if (isVerified){
                     accessJwt = jwtService.generateToken(user, "access_token");
                     user.setLastLogin(LocalDateTime.now());
                     userRepository.save(user);
-                    System.out.println("Google Auth successfully authenticated for " + request.getEmail());
+                    log.info("Google Auth successfully authenticated for " + request.getEmail());
                     return new AuthResponse(accessJwt);
                 }
                 return null;
@@ -320,7 +325,7 @@ public class AuthService {
             setCookieAttribute(response, refreshTokenCookie);
 
         } catch (Exception e) {
-            System.err.println("Error extracting subject from JWT: " + e.getMessage());
+            log.error("Error extracting subject from JWT: " + e.getMessage());
         }
     }
 
@@ -361,7 +366,7 @@ public class AuthService {
             userRepository.save(user);
 
         } catch (Exception e) {
-            System.err.println("Error extracting subject from JWT: " + e.getMessage());
+            log.error("Error extracting subject from JWT: " + e.getMessage());
         }
     }
 }

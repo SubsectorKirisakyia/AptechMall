@@ -12,7 +12,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -77,6 +79,7 @@ public class User implements UserDetails {
     @Column(name="last_login")
     private LocalDateTime lastLogin;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Convert(converter = OAuthConverter.class)
     @Column(columnDefinition = "json")
     private Map<String, Object> oAuth = new HashMap<>();
