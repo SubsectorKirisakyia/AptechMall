@@ -266,7 +266,7 @@ public class AuthService {
             newUser.setEmail(request.getEmail());
             newUser.setFullName(request.getFullname());
             newUser.setUsername(request.getEmail());
-            newUser.setPassword(passwordEncoder.encode("")); //temporarily set as blank as OAuth doesn't set password for you, login will not authenticate if password is blank
+            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
             newUser.setEmailVerified(true);
             newUser.setOAuth(oAuthGoogle);
             return userRepository.save(newUser);
@@ -314,18 +314,18 @@ public class AuthService {
             User user = userRepository.findByEmail(credential.getOldEmail()).orElseThrow(() -> new UsernameNotFoundException("Email not in Database"));
             boolean existUsername = userRepository.existsByUsername(user.getUsername());
 
-            if (!passwordEncoder.matches(credential.getOldPassword(), user.getPassword())){
-                throw new BadCredentialsException("Old Password does not match");
-            }
             if (!credential.getPassword().isEmpty()){
-                user.setPassword(passwordEncoder.encode(credential.getPassword()));
-                if (user.getOAuth() != null) {
-                    Map<String, Object> oauth = new HashMap<>(user.getOAuth());
-                    Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
-                    if (!passwordSet) {
-                        oauth.put("passwordSet", true);
-                        user.setOAuth(oauth);
+                Map<String, Object> oauth = new HashMap<>(user.getOAuth());
+                Boolean passwordSet = (Boolean) oauth.getOrDefault("passwordSet", true);
+                if (!passwordSet) {
+                    user.setPassword(passwordEncoder.encode(credential.getPassword()));
+                    oauth.put("passwordSet", true);
+                    user.setOAuth(oauth);
+                } else {
+                    if (!passwordEncoder.matches(credential.getOldPassword(), user.getPassword())){
+                        throw new BadCredentialsException("Old Password does not match");
                     }
+                    user.setPassword(passwordEncoder.encode(credential.getPassword()));
                 }
             }
 
